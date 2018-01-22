@@ -31,7 +31,7 @@ class RecentCallManager {
     private struct Configuration {
 
         /// What is the minimum time between 2 fetches.
-        static let refreshInterval = 60.0
+        static let refreshInterval = 1.0
     }
 
     /// Context that is used to fetch and store RecentCalls in.
@@ -87,26 +87,27 @@ class RecentCallManager {
                 completion(self.recentsFetchErrorCode)
             }
             self.reloading = false
-            switch result {
-            case .failure(WebserviceError.forbidden):
-                self.recentsFetchErrorCode = .fetchNotAllowed
-            case .failure:
-                self.recentsFetchErrorCode = .fetchFailed
-            case let .success(calls):
-                guard let calls = calls else {
-                    return
-                }
-                // Set last fetch date to now.
-                self.previousRefresh = Date()
-                self.recentsFetchErrorCode = nil
 
-                // Create and store the calls in the context.
-                self.managedContext.performAndWait {
-                    for call in calls {
-                        _ = RecentCall.findOrCreate(for: call, in: self.managedContext)
-                        try? self.managedContext.save()
+            switch result {
+                case .failure(WebserviceError.forbidden):
+                    self.recentsFetchErrorCode = .fetchNotAllowed
+                case .failure:
+                    self.recentsFetchErrorCode = .fetchFailed
+                case let .success(calls):
+                    guard let calls = calls else {
+                        return
                     }
-                }
+                    // Set last fetch date to now.
+                    self.previousRefresh = Date()
+                    self.recentsFetchErrorCode = nil
+
+                    // Create and store the calls in the context.
+                    self.managedContext.performAndWait {
+                        for call in calls {
+                            _ = RecentCall.findOrCreate(for: call, in: self.managedContext)
+                            try? self.managedContext.save()
+                        }
+                    }
             }
         }
     }

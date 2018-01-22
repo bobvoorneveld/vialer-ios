@@ -136,7 +136,8 @@ extension RecentCall {
     /// - Returns: RecentCall Resource.
     static func allSince(date: Date) -> Resource<[JSONDictionary]> {
         var resource = RecentCall.all
-        resource.add(parameters: ["call_date__gte": date.apiFormatted24hCET])
+        resource.add(parameters: ["call_date__gte": "2017-01-10T13:58:56"])
+//        resource.add(parameters: ["call_date__gte": date.apiFormatted24hCET])
         return resource
     }
 }
