@@ -68,6 +68,8 @@ extern NSString * const ConfigurationGADimensionBuildIndex;
  *
  * return NSString Google tracking id.
  */
-- (NSString *)googleTrackingId;
+- (NSString * _Nonnull)googleTrackingId;
+
+- (NSArray * _Nullable)stunServers;
 
 @end

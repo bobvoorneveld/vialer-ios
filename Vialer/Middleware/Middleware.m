@@ -94,14 +94,14 @@ NSString * const MiddlewareRegistrationOnOtherDeviceNotification = @"MiddlewareR
 
     NSString *payloadType = payload[MiddlewareAPNSPayloadKeyType];
     VialerLogDebug(@"Push message received from middleware of type: %@", payloadType);
-    VialerLogVerbose(@"Payload:\n%@", payload);
+    VialerLogDebug(@"Payload:\n%@", payload);
 
     if ([payloadType isEqualToString:MiddlewareAPNSPayloadKeyCall]) {
         // Incoming call.
         if (![SystemUser currentUser].sipEnabled) {
             // User is not SIP enabled.
             // Sent not available to the middleware.
-            VialerLogDebug(@"Not accepting call, SIP Disabled, Sending Available = NO to middleware");
+            VialerLogWarning(@"Not accepting call, SIP Disabled, Sending Available = NO to middleware");
             [self respondToMiddleware:payload isAvailable:NO withAccount:nil andPushResponseTimeMeasurementStart:pushResponseTimeMeasurementStart];
             return;
         }
@@ -125,7 +125,7 @@ NSString * const MiddlewareRegistrationOnOtherDeviceNotification = @"MiddlewareR
         [SIPUtils registerSIPAccountWithEndpointWithCompletion:^(BOOL success, VSLAccount *account) {
             // Check if register was success.
             if (!success) {
-                VialerLogDebug(@"SIP Endpoint registration FAILED. Sending Available = NO to middleware");
+                VialerLogWarning(@"SIP Endpoint registration FAILED. Sending Available = NO to middleware");
                 [self respondToMiddleware:payload isAvailable:NO withAccount:nil andPushResponseTimeMeasurementStart:pushResponseTimeMeasurementStart];
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [SIPUtils removeSIPEndpoint];
@@ -141,7 +141,7 @@ NSString * const MiddlewareRegistrationOnOtherDeviceNotification = @"MiddlewareR
             } else {
                 // Connection is not good enough.
                 // Sent not available to the middleware.
-                VialerLogDebug(@"Not accepting call, connection quality insufficient. Sending Available = NO to middleware");
+                VialerLogWarning(@"Not accepting call, connection quality insufficient. Sending Available = NO to middleware");
                 [self respondToMiddleware:payload isAvailable:NO withAccount:nil andPushResponseTimeMeasurementStart:pushResponseTimeMeasurementStart];
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [SIPUtils removeSIPEndpoint];
@@ -152,7 +152,7 @@ NSString * const MiddlewareRegistrationOnOtherDeviceNotification = @"MiddlewareR
     } else if ([payloadType isEqualToString:MiddlewareAPNSPayloadKeyCheckin]) {
         VialerLogDebug(@"Checking payload:\n %@", payload);
     } else if ([payloadType isEqualToString:MiddlewareAPNSPayloadKeyMessage] && self.systemUser.sipEnabled) {
-        VialerLogDebug(@"Another device took over the SIP account, disabling account.");
+        VialerLogWarning(@"Another device took over the SIP account, disabling account.");
         self.systemUser.sipEnabled = NO;
         NSNotification *notification = [NSNotification notificationWithName:MiddlewareRegistrationOnOtherDeviceNotification object:nil];
         [[NSNotificationQueue defaultQueue] enqueueNotification:notification postingStyle:NSPostASAP];
