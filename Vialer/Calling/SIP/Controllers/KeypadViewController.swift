@@ -36,7 +36,9 @@ class KeypadViewController: UIViewController {
     var dtmfSent: String? {
         didSet {
             delegate?.dtmfSent(dtmfSent)
-            numberLabel.text = dtmfSent
+            DispatchQueue.main.async { [weak self] in
+                self?.numberLabel.text = self?.dtmfSent
+            }
         }
     }
 
